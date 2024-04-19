@@ -38,11 +38,13 @@
                 type="text"
                 class="form-control"
                 id="lastName"
-                placeholder="Nguyen"
+                placeholder=""
                 v-model="me.lastName"
                 required
               />
-              <div class="invalid-feedback">Họ là bắt buộc</div>
+              <div :v-if="message.lastName" class="invalid-feedback d-block">
+                {{ message.lastName }}
+              </div>
             </div>
 
             <div class="col-sm-6">
@@ -51,14 +53,16 @@
                 type="text"
                 class="form-control"
                 id="firstName"
-                placeholder="dat"
+                placeholder=""
                 v-model="me.firstName"
                 required
               />
-              <div class="invalid-feedback">Tên là bắt buộc!</div>
+              <div :v-if="message.firstName" class="invalid-feedback d-block">
+                {{ message.firstName }}
+              </div>
             </div>
             <div class="col-12">
-              <label for="email" class="form-label">Email </label>
+              <label for="email" class="form-label">Email</label>
               <input
                 type="email"
                 class="form-control"
@@ -66,8 +70,8 @@
                 v-model="me.email"
                 placeholder="you@example.com"
               />
-              <div class="invalid-feedback">
-                Please enter a valid email address for shipping updates.
+              <div class="invalid-feedback d-block">
+                {{ message.email }}
               </div>
             </div>
 
@@ -78,11 +82,9 @@
                 class="form-control"
                 id="email"
                 v-model="me.phoneNumber"
-                placeholder="086824..."
+                placeholder=""
               />
-              <div class="invalid-feedback">
-                Please enter a valid email address for shipping updates.
-              </div>
+              <div class="invalid-feedback d-block">{{ message.phoneNumber }}</div>
             </div>
 
             <div class="col-12">
@@ -95,7 +97,7 @@
                 v-model="me.address"
                 required
               />
-              <div class="invalid-feedback">Please enter your shipping address.</div>
+              <div class="invalid-feedback d-block">{{ message.address }}</div>
             </div>
 
             <div class="col-md-6">
@@ -105,7 +107,7 @@
                 <option value="1">Nữ</option>
                 <option value="unknown"></option>
               </select>
-              <div class="invalid-feedback">Please select a valid country.</div>
+              <div class="invalid-feedback d-block">{{ message.gender }}</div>
             </div>
 
             <div class="col-md-6">
@@ -118,13 +120,14 @@
                 placeholder=""
                 required
               />
-              <div class="invalid-feedback">Zip code required.</div>
+              <div class="invalid-feedback d-block">{{ message.birthday }}</div>
             </div>
           </div>
 
           <hr class="my-4" />
 
           <button
+            :disabled="!isFormChanged"
             class="w-100 btn btn-lg"
             style="background-color: #226e3e; color: #fff"
             type="submit"
@@ -140,21 +143,27 @@
 <script setup>
 const baseURL = import.meta.env.VITE_BE_ENDPOINT
 import { getOne, updateOne, uploadImage } from '@/api/dataController'
-import { computed, onMounted, ref } from 'vue'
+import router from '@/router'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
+
 const me = ref({})
+let initState
+const isFormChanged = ref(false)
 const inputRef = ref(null)
 const imageUrl = ref('')
 const message = ref({})
 
-const handleClick = () => {
-  inputRef.value?.click()
-}
+watch(
+  () => JSON.stringify(me.value),
+  (value) => {
+    isFormChanged.value = value !== JSON.stringify(initState)
+  }
+)
 
 const handleSubmit = async () => {
   try {
-    console.log(me.value)
     const { firstName, lastName, phoneNumber, gender, birthday, avatar, address } = me.value
     await updateOne('users', 'me', {
       firstName,
@@ -165,9 +174,12 @@ const handleSubmit = async () => {
       avatar,
       address
     })
+
     toast.success('cập Nhật Thông tin cá nhân thành công!')
+    router.push('/')
   } catch (error) {
-    console.error(error)
+    console.log(error.response.data)
+    message.value = error.response.data
   }
 }
 
@@ -189,6 +201,10 @@ const handleFileUpload = async (event) => {
   }
 }
 
+const handleClick = () => {
+  inputRef.value?.click()
+}
+
 const getImg = computed(() => {
   if (imageUrl.value) return imageUrl.value
   if (me.value.avatar) return baseURL + '/' + me.value.avatar
@@ -197,9 +213,9 @@ const getImg = computed(() => {
 
 onMounted(async () => {
   try {
-    const res = await getOne('users', 'me')
-    me.value = res
-    me.value.birthday = me.value.birthday.split('T')[0]
+    initState = await getOne('users', 'me')
+    initState.birthday = initState.birthday.split('T')[0]
+    me.value = JSON.parse(JSON.stringify(initState))
   } catch (error) {
     console.error(error)
   }

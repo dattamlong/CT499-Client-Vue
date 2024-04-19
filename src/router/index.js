@@ -3,6 +3,7 @@ import HomeView from '@/views/HomeView.vue'
 import SignInView from '@/views/SignInView.vue'
 import BookDetail from '@/views/BookDetail.vue'
 import Profile from '@/views/Profile.vue'
+import BorrowHistory from '@/views/BorrowHistory.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,11 +25,18 @@ const router = createRouter({
         layout: 'store'
       }
     },
-
     {
       path: '/profile',
       name: 'Trang cá nhân',
       component: Profile,
+      meta: {
+        layout: 'store'
+      }
+    },
+    {
+      path: '/borrow-history',
+      name: 'Lịch sử mượn sách',
+      component: BorrowHistory,
       meta: {
         layout: 'store'
       }

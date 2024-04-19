@@ -10,7 +10,15 @@
       </a>
 
       <ul class="nav nav-pills">
-        <li class="nav-item"><a href="#" class="nav-link">Liên hệ</a></li>
+        <li class="nav-item">
+          <a
+            style="color: #226e3e"
+            target="_blank"
+            href="https://www.facebook.com/profile.php?id=100024557764749"
+            class="nav-link"
+            >Liên hệ</a
+          >
+        </li>
       </ul>
     </header>
   </div>
