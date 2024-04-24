@@ -21,12 +21,17 @@
 
             <div class="d-flex">
               <button
+                :disabled="borrowed"
+                @click="borrowBook"
                 class="btn flex-shrink-0"
                 style="background-color: #226e3e; color: #fff"
                 type="button"
               >
-                <i class="bi-cart-fill me-1"></i>
-                Mượn sách
+                {{
+                  borrowed?.borrowingDay
+                    ? 'Đã mượn sách vào ngày ' + formatDate(borrowed?.borrowingDay)
+                    : 'Mượn sách'
+                }}
               </button>
             </div>
           </div>
@@ -34,43 +39,79 @@
       </div>
     </section>
     <!-- Related items section-->
-    <ListProductCarousel :books="books" />
+    <ListProductCarousel :books="books" heading="Các sản phẩm khác" />
   </div>
   <div v-else><Spinner /></div>
 </template>
 
 <script setup>
-import { formatCurrency } from '@/utils/format.js'
-import { getList, getOne } from '@/api/dataController'
+import { create, getList, getOne } from '@/api/dataController'
+import router from '@/router'
+import { useAuthStore } from '@/stores/authStore'
 import { onBeforeMount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from 'vue-toastification'
 import ListProductCarousel from '../components/list/ListProductCarousel.vue'
 import Spinner from '../components/Spinner/Spinner.vue'
+import { formatDate } from '../utils/format'
 
+const toast = useToast()
 const baseURL = import.meta.env.VITE_BE_ENDPOINT
 const route = useRoute()
-const id = route.params.id
 const book = ref({})
 const books = ref([])
-const loading = ref(false)
+const authStore = useAuthStore()
+const loading = ref(true)
+const userId = authStore.user._id
+const borrowed = ref({})
 
 watch(
-  () => id,
+  () => route.params.id,
   () => {
     fetchData()
   }
 )
 
+const borrowBook = async () => {
+  loading.value = true
+  try {
+    const borrowingDay = new Date()
+    const returnDay = new Date(borrowingDay.getTime() + 30 * 24 * 60 * 60 * 1000)
+    const borrowingDayISO = borrowingDay.toISOString()
+    const returnDayISO = returnDay.toISOString()
+
+    const data = {
+      reader: userId,
+      book: route.params.id,
+      borrowingDay: borrowingDayISO,
+      returnDay: returnDayISO
+    }
+    await create('borrows', data)
+    fetchData()
+    toast.success('Hạn trả sách của bạn là tối đa 30 ngày sau khi mượn')
+  } catch (error) {
+    console.error(error)
+    toast.error('Bạn không thể mượn quyển sách này')
+  }
+  loading.value = false
+}
+
 const fetchData = async () => {
   loading.value = true
   try {
-    const res = await getOne('books', id)
+    const res = await getOne('books', route.params.id)
+    const { data: borrows } = await getList('borrows/reader')
+    const processed = borrows?.reduce((prev, borrow) => {
+      return { ...prev, [borrow.book]: borrow }
+    }, {})
+    borrowed.value = processed[res._id]
     const { data } = await getList('books')
     const filteredBooks = data.filter((item) => item._id !== res._id)
     books.value = filteredBooks.slice(0, 6)
     book.value = res
   } catch (error) {
     console.error(error)
+    toast.error('Quá trình lấy dữ liệu thất bại')
   }
   loading.value = false
 }

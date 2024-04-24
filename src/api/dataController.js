@@ -43,6 +43,13 @@ export const deleteOne = async (resource, id) => {
   return data
 }
 
+export const registerUser = async (newData) => {
+  const url = `${apiURL}/auth/register`
+  const { data } = await api.post(url, newData)
+
+  return data
+}
+
 export const uploadImage = (source, file) => {
   const formData = new FormData()
 

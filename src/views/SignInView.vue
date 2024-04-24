@@ -26,6 +26,9 @@
       <button class="btn w-100 py-2" style="background-color: #226e3e; color: #fff" type="submit">
         Đăng nhập
       </button>
+      <a href="/sign-up" class="nav-link">
+        <small style="color: #226e3e" class="my-2"> Đăng kí tài khoản? </small>
+      </a>
     </form>
   </main>
 </template>

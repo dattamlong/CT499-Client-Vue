@@ -9,7 +9,7 @@
     <hr class="my-4" />
     <div class="pt-5">
       <h6 class="mb-0">
-        <a class="text-body">Trở về trang chủ</a>
+        <a href="/" class="text-body">Trở về trang chủ</a>
       </h6>
     </div>
   </div>
@@ -30,7 +30,7 @@ const loading = ref(false)
 onMounted(async () => {
   loading.value = true
   try {
-    const res = await getList('borrows')
+    const res = await getList('borrows/reader')
     const { data: books } = await getList('books')
 
     const processedBook = books.reduce((prev, book) => {

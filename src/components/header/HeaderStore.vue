@@ -3,11 +3,19 @@
     <div class="container d-flex flex-wrap">
       <ul class="nav me-auto">
         <li class="nav-item">
-          <a href="#" class="nav-link link-body-emphasis px-2 active" aria-current="page"
+          <a
+            href="https://coldbook2108.blogspot.com/2024/04/gioi-thieu-so-luoc-ve-coldbook.html"
+            class="nav-link link-body-emphasis px-2 active"
             >Giới thiệu</a
           >
         </li>
-        <li class="nav-item"><a href="#" class="nav-link link-body-emphasis px-2">Liên hệ</a></li>
+        <li class="nav-item">
+          <a
+            href="https://www.facebook.com/profile.php?id=100024557764749"
+            class="nav-link link-body-emphasis px-2"
+            >Liên hệ</a
+          >
+        </li>
       </ul>
 
       <div class="dropdown">
@@ -34,17 +42,17 @@
             </button>
           </li>
           <li>
-            <button @click="() => authStore.logout()" class="dropdown-item" type="button">
-              Đăng xuất
-            </button>
-          </li>
-          <li>
             <button
               @click="() => router.push('/borrow-history')"
               class="dropdown-item"
               type="button"
             >
               Lịch sử mượn sách
+            </button>
+          </li>
+          <li>
+            <button @click="() => authStore.logout()" class="dropdown-item" type="button">
+              Đăng xuất
             </button>
           </li>
         </ul>
@@ -61,7 +69,14 @@
         <span style="color: #226e3e" class="fs-4"> &nbsp; ColdBook</span>
       </a>
       <form class="col-12 col-lg-auto mb-3 mb-lg-0" role="search">
-        <input type="search" class="form-control" placeholder="Tìm kiếm..." aria-label="Search" />
+        <input
+          type="search"
+          class="form-control"
+          name="search"
+          placeholder="Tìm kiếm..."
+          aria-label="Search"
+          onkeypress="handleKeyPress(event)"
+        />
       </form>
     </div>
   </header>
@@ -72,4 +87,10 @@ const baseURL = import.meta.env.VITE_BE_ENDPOINT
 import router from '@/router'
 import { useAuthStore } from '@/stores/authStore'
 const authStore = useAuthStore()
+
+function handleKeyPress(event) {
+  if (event.keyCode === 13) {
+    event.preventDefault()
+  }
+}
 </script>

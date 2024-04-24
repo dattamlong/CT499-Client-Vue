@@ -1,14 +1,23 @@
 <template>
-  <main v-if="!loading" class="py-4">
+  <main class="py-4">
     <div class="row g-5">
       <div class="col-md-5 col-lg-4 order-md-last text-center">
         <div class="">
           <img
+            v-if="getImg"
             :src="getImg"
             class="rounded-circle"
             style="width: 270px; height: 270px; object-fit: cover"
             alt="Avatar"
           />
+          <img
+            v-else
+            src="../assets/icons/user.svg"
+            class="rounded-circle"
+            style="width: 270px; height: 270px; object-fit: cover"
+            alt="Avatar"
+          />
+
           <div class="my-1">
             <button type="button" class="btn" @click="handleClick">
               <div class="d-flex align-items-center">
@@ -29,7 +38,7 @@
         </div>
       </div>
       <div class="col-md-7 col-lg-8">
-        <h4 class="mb-3">Thông tin cá nhân</h4>
+        <h4 class="mb-3">Đăng ký tài khoản</h4>
         <form class="needs-validation" novalidate @submit.prevent="handleSubmit">
           <div class="row g-3">
             <div class="col-sm-6">
@@ -124,6 +133,19 @@
             </div>
           </div>
 
+          <div class="col-12">
+            <label for="address" class="form-label">Mật khẩu</label>
+            <input
+              type="password"
+              class="form-control"
+              id="address"
+              placeholder="Mật khẩu"
+              v-model="me.password"
+              required
+            />
+            <div class="invalid-feedback d-block">{{ message.password }}</div>
+          </div>
+
           <hr class="my-4" />
 
           <button
@@ -132,21 +154,19 @@
             style="background-color: #226e3e; color: #fff"
             type="submit"
           >
-            Lưu thông tin
+            Đăng ký
           </button>
         </form>
       </div>
     </div>
   </main>
-  <div v-else><Spinner /></div>
 </template>
 
 <script setup>
 const baseURL = import.meta.env.VITE_BE_ENDPOINT
-import { getOne, updateOne, uploadImage } from '@/api/dataController'
+import { create, getOne, registerUser, updateOne, uploadImage } from '@/api/dataController'
 import router from '@/router'
 import { computed, onMounted, ref, watch } from 'vue'
-import Spinner from '../components/Spinner/Spinner.vue'
 import { useToast } from 'vue-toastification'
 const toast = useToast()
 
@@ -156,7 +176,6 @@ const isFormChanged = ref(false)
 const inputRef = ref(null)
 const imageUrl = ref('')
 const message = ref({})
-const loading = ref(false)
 
 watch(
   () => JSON.stringify(me.value),
@@ -166,26 +185,28 @@ watch(
 )
 
 const handleSubmit = async () => {
-  loading.value = true
   try {
-    const { firstName, lastName, phoneNumber, gender, birthday, avatar, address } = me.value
-    await updateOne('users', 'me', {
+    const { firstName, lastName, phoneNumber, gender, birthday, avatar, address, password, email } =
+      me.value
+    await registerUser({
       firstName,
       lastName,
       phoneNumber,
       gender,
+      email,
       birthday,
       avatar,
-      address
+      address,
+      password
     })
 
-    toast.success('Cập nhật Thông tin cá nhân thành công!')
-    router.push('/')
+    toast.success('Đăng kí tài khoản thành công!')
+    router.push('/sign-in')
   } catch (error) {
     console.log(error.response.data)
+    console.log(error)
     message.value = error.response.data
   }
-  loading.value = false
 }
 
 const handleFileUpload = async (event) => {
@@ -214,17 +235,5 @@ const getImg = computed(() => {
   if (imageUrl.value) return imageUrl.value
   if (me.value.avatar) return baseURL + '/' + me.value.avatar
   return false
-})
-
-onMounted(async () => {
-  loading.value = true
-  try {
-    initState = await getOne('users', 'me')
-    initState.birthday = initState.birthday.split('T')[0]
-    me.value = JSON.parse(JSON.stringify(initState))
-  } catch (error) {
-    console.error(error)
-  }
-  loading.value = false
 })
 </script>

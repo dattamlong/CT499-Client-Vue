@@ -8,6 +8,5 @@
 
 <script setup>
 const props = defineProps(['books'])
-console.log(props.books)
 import CardProduct from '../Card/CardProduct.vue'
 </script>
